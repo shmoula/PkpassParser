@@ -1,6 +1,7 @@
 package cz.shmoula.pkpassparser.model;
 
 
+import java.util.Arrays;
 import java.util.Date;
 
 public class Pass {
@@ -11,6 +12,7 @@ public class Pass {
     private String passTypeIdentifier;
     private String organizationName;
     private String description;
+    private long[] associatedStoreIdentifiers;
 
     private String backgroundColor;
     private String foregroundColor;
@@ -19,20 +21,7 @@ public class Pass {
     private Date expirationDate;
     private Date relevantDate;
 
-    @Override
-    public String toString() {
-        return "Pass{" +
-                "formatVersion=" + formatVersion +
-                ", serialNumber='" + serialNumber + '\'' +
-                ", teamIdentifier='" + teamIdentifier + '\'' +
-                ", passTypeIdentifier='" + passTypeIdentifier + '\'' +
-                ", organizationName='" + organizationName + '\'' +
-                ", description='" + description + '\'' +
-                ", backgroundColor='" + backgroundColor + '\'' +
-                ", foregroundColor='" + foregroundColor + '\'' +
-                ", labelColor='" + labelColor + '\'' +
-                ", expirationDate=" + expirationDate +
-                ", relevantDate=" + relevantDate +
-                '}';
-    }
+    private Barcode barcode;
+    private Location[] locations;
+    private BoardingPass boardingPass;
 }
