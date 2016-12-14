@@ -6,6 +6,7 @@ import android.os.Bundle;
 import org.apache.commons.compress.archivers.ArchiveException;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 import cz.shmoula.pkpassparser.model.Pass;
 import cz.shmoula.pkpassparser.util.PkpassParser;
@@ -19,11 +20,16 @@ public class MainActivity extends Activity {
 
         try {
             PkpassParser parser = new PkpassParser(getApplicationContext(), "letenka.pkpass");
-            Pass pass = parser.readFile("pass.json", Pass.class);
+
+            if(parser.isManifestValid()) {
+                Pass pass = parser.readFile("pass.json", Pass.class);
+            }
 
         } catch (ArchiveException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }

@@ -4,6 +4,9 @@ import android.content.Context;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -20,15 +23,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * Helper for parsing pkpass file.
  */
 public class PkpassParser {
+    private static final String FILENAME_MANIFEST = "manifest.json";
+    private static final String CHARSET_NAME = "UTF-8";
+
     private Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").create();
     private String pkpassDirectory;
 
+    /**
+     * Opens pkpass file from assets directory.
+     */
     public PkpassParser(Context context, String assetFilename) throws IOException, ArchiveException {
 
         // Load pkpass from asset directory.
@@ -50,9 +62,34 @@ public class PkpassParser {
      */
     public <T> T readFile(String filename, Class<T> classOfT) throws FileNotFoundException, UnsupportedEncodingException {
         File file = getFile(filename);
-        Reader jsonReader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+        Reader jsonReader = new InputStreamReader(new FileInputStream(file), CHARSET_NAME);
 
         return gson.fromJson(jsonReader, classOfT);
+    }
+
+    /**
+     * Checks hashes in manifest file against archived files hashes.
+     */
+    public boolean isManifestValid() throws IOException, NoSuchAlgorithmException {
+        File manifestFile = getFile(FILENAME_MANIFEST);
+        Reader jsonReader = new InputStreamReader(new FileInputStream(manifestFile), CHARSET_NAME);
+
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(jsonReader);
+
+        JsonObject obj = element.getAsJsonObject();
+
+        for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
+            String key = entry.getKey();
+            File file = new File(pkpassDirectory, key);
+            String hashFromfile = computeShaFromFile(file);
+            String hashFromManifest = entry.getValue().getAsString();
+
+            if (!hashFromfile.equals(hashFromManifest))
+                return false;
+        }
+
+        return true;
     }
 
     /**
@@ -105,5 +142,29 @@ public class PkpassParser {
             fos.getFD().sync();
             outputStream.close();
         }
+    }
+
+    /**
+     * Computes SHA for input file.
+     */
+    private String computeShaFromFile(File file) throws IOException, NoSuchAlgorithmException {
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
+        FileInputStream fis = new FileInputStream(file);
+        StringBuffer sb = new StringBuffer("");
+
+        try {
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                messageDigest.update(buffer, 0, bytesRead);
+            }
+
+            // Convert byte to hex.
+            for (byte bb : messageDigest.digest())
+                sb.append(Integer.toString((bb & 0xff) + 0x100, 16).substring(1));
+        } finally {
+            fis.close();
+        }
+        return sb.toString();
     }
 }
