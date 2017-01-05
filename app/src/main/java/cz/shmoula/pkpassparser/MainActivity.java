@@ -4,7 +4,8 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.zxing.WriterException;
 
@@ -15,6 +16,7 @@ import java.security.NoSuchAlgorithmException;
 
 import cz.shmoula.pkpassparser.model.Pass;
 import cz.shmoula.pkpassparser.util.BarcodeEncoder;
+import cz.shmoula.pkpassparser.util.ImageEncoder;
 import cz.shmoula.pkpassparser.util.PkpassParser;
 
 public class MainActivity extends Activity {
@@ -30,14 +32,30 @@ public class MainActivity extends Activity {
             if(parser.isManifestValid()) {
                 Pass pass = parser.readFile("pass.json", Pass.class);
 
+                // Load and show logo.
+                Bitmap logoBitmap = ImageEncoder.readBitmap("logo.png", parser);
+
+                ImageView logoImage = (ImageView) findViewById(R.id.logo);
+                logoImage.setImageBitmap(logoBitmap);
+
+                // Load and show barcode.
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder(getApplicationContext());
-                Bitmap bitmap = barcodeEncoder.getBitmap(pass.getBarcode().getMessage(), pass.getBarcode().getFormat());
+                Bitmap barcodeBitmap = barcodeEncoder.getBitmap(pass.getBarcode().getMessage(), pass.getBarcode().getFormat());
 
                 ImageView imageView = (ImageView) findViewById(R.id.barcode);
-                imageView.setImageBitmap(bitmap);
+                imageView.setImageBitmap(barcodeBitmap);
 
-                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.activity_main);
-                relativeLayout.setBackgroundColor(pass.getBackgroundColor());
+                // Set background color.
+                LinearLayout linearLayout = (LinearLayout) findViewById(R.id.root_view);
+                linearLayout.setBackgroundColor(pass.getBackgroundColor());
+
+                // Show label example.
+                TextView label = (TextView) findViewById(R.id.label);
+                label.setTextColor(pass.getLabelColor());
+
+                // Show field example.
+                TextView field = (TextView) findViewById(R.id.field);
+                field.setTextColor(pass.getForegroundColor());
             }
 
         } catch (ArchiveException e) {
