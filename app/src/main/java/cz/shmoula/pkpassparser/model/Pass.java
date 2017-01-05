@@ -100,8 +100,6 @@ public class Pass {
             Integer g = Integer.valueOf(m.group(2));
             Integer b = Integer.valueOf(m.group(3));
 
-            System.out.println("Color " + input + " to " + Color.rgb(r, g, b));
-
             return Color.rgb(r, g, b);
         }
 

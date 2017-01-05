@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,6 +26,8 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -65,6 +68,27 @@ public class PkpassParser {
         Reader jsonReader = new InputStreamReader(new FileInputStream(file), CHARSET_NAME);
 
         return gson.fromJson(jsonReader, classOfT);
+    }
+
+    /**
+     * Returns list of available languages.
+     */
+    public List<String> getLanguages() {
+        File directory = new File(pkpassDirectory);
+        List<String> languages = new ArrayList<>();
+
+        String[] langDirs = directory.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return s.toLowerCase().endsWith(".lproj");
+            }
+        });
+
+        // Omit everything after "."
+        for (String languageDirectory : langDirs)
+            languages.add(languageDirectory.substring(0, languageDirectory.indexOf(".")));
+
+        return languages;
     }
 
     /**
