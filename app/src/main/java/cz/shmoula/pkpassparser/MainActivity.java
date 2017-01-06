@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import cz.shmoula.pkpassparser.model.Pass;
 import cz.shmoula.pkpassparser.util.BarcodeEncoder;
 import cz.shmoula.pkpassparser.util.ImageEncoder;
+import cz.shmoula.pkpassparser.util.LanguageAccessor;
 import cz.shmoula.pkpassparser.util.PkpassParser;
 
 public class MainActivity extends Activity {
@@ -29,8 +30,11 @@ public class MainActivity extends Activity {
         try {
             PkpassParser parser = new PkpassParser(getApplicationContext(), "letenka.pkpass");
 
-            if(parser.isManifestValid()) {
+            if (parser.isManifestValid()) {
                 Pass pass = parser.readFile("pass.json", Pass.class);
+
+                // Attempt to load translation for "en" language.
+                LanguageAccessor languageAccessor = new LanguageAccessor("en", parser);
 
                 // Load and show logo.
                 Bitmap logoBitmap = ImageEncoder.readBitmap("logo.png", parser);
