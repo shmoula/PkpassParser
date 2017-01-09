@@ -3,6 +3,7 @@ package cz.shmoula.pkpassparser;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -14,6 +15,7 @@ import org.apache.commons.compress.archivers.ArchiveException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
+import cz.shmoula.pkpassparser.model.Field;
 import cz.shmoula.pkpassparser.model.Pass;
 import cz.shmoula.pkpassparser.util.BarcodeEncoder;
 import cz.shmoula.pkpassparser.util.ImageEncoder;
@@ -21,6 +23,7 @@ import cz.shmoula.pkpassparser.util.LanguageAccessor;
 import cz.shmoula.pkpassparser.util.PkpassParser;
 
 public class MainActivity extends Activity {
+    private static final String FILENAME_PKPASS = "letenka3.pkpass";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,13 +31,10 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         try {
-            PkpassParser parser = new PkpassParser(getApplicationContext(), "letenka.pkpass");
+            PkpassParser parser = new PkpassParser(getApplicationContext(), FILENAME_PKPASS);
 
             if (parser.isManifestValid()) {
                 Pass pass = parser.readFile("pass.json", Pass.class);
-
-                // Attempt to load translation for "en" language.
-                LanguageAccessor languageAccessor = new LanguageAccessor("en", parser);
 
                 // Load and show logo.
                 Bitmap logoBitmap = ImageEncoder.readBitmap("logo.png", parser);
@@ -53,13 +53,18 @@ public class MainActivity extends Activity {
                 LinearLayout linearLayout = (LinearLayout) findViewById(R.id.root_view);
                 linearLayout.setBackgroundColor(pass.getBackgroundColor());
 
-                // Show label example.
-                TextView label = (TextView) findViewById(R.id.label);
-                label.setTextColor(pass.getLabelColor());
+                // Attempt to load translation for "en" language.
+                LanguageAccessor languageAccessor = new LanguageAccessor("en", parser);
 
-                // Show field example.
-                TextView field = (TextView) findViewById(R.id.field);
-                field.setTextColor(pass.getForegroundColor());
+                // Render a few fields.
+                Field[] auxiliaryFields = pass.getBoardingPass().getAuxiliaryFields();
+                for (Field field : auxiliaryFields) {
+                    TextView label = generateTextView(pass.getLabelColor(), languageAccessor.getString(field.getLabel()));
+                    TextView value = generateTextView(pass.getForegroundColor(), field.getValue());
+
+                    linearLayout.addView(label);
+                    linearLayout.addView(value);
+                }
             }
 
         } catch (ArchiveException e) {
@@ -71,5 +76,18 @@ public class MainActivity extends Activity {
         } catch (WriterException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Generates TextView with specified text color and content.
+     */
+    private TextView generateTextView(int color, String text) {
+        TextView textView = new TextView(getApplicationContext());
+
+        textView.setText(text);
+        textView.setTextColor(color);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+
+        return textView;
     }
 }

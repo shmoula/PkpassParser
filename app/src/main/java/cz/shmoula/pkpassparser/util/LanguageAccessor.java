@@ -2,9 +2,12 @@ package cz.shmoula.pkpassparser.util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -63,5 +66,26 @@ public class LanguageAccessor {
         Matcher regexMatcher = regex.matcher(value);
 
         return (regexMatcher.find()) ? regexMatcher.group(1) : "";
+    }
+
+    /**
+     * Returns list of available languages.
+     */
+    public static List<String> getLanguages(PkpassParser parser) {
+        File directory = parser.getFile(".");
+        List<String> languages = new ArrayList<>();
+
+        String[] langDirs = directory.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return s.toLowerCase().endsWith(".lproj");
+            }
+        });
+
+        // Omit everything after "."
+        for (String languageDirectory : langDirs)
+            languages.add(languageDirectory.substring(0, languageDirectory.indexOf(".")));
+
+        return languages;
     }
 }
