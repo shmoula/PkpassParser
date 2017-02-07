@@ -44,7 +44,10 @@ public class MainActivity extends Activity {
 
                 // Load and show barcode.
                 BarcodeEncoder barcodeEncoder = new BarcodeEncoder(getApplicationContext());
-                Bitmap barcodeBitmap = barcodeEncoder.getBitmap(pass.getBarcode().getMessage(), pass.getBarcode().getFormat());
+                Bitmap barcodeBitmap = barcodeEncoder.getBitmap(
+                        pass.getBarcode().getMessage(),
+                        pass.getBarcode().getFormat(),
+                        R.dimen.barcode_size);
 
                 ImageView imageView = (ImageView) findViewById(R.id.barcode);
                 imageView.setImageBitmap(barcodeBitmap);

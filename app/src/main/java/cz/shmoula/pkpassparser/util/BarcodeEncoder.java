@@ -2,13 +2,17 @@ package cz.shmoula.pkpassparser.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.DisplayMetrics;
+import android.support.annotation.DimenRes;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.Writer;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Utility for encoding text to barcode bitmap.
@@ -25,7 +29,7 @@ public class BarcodeEncoder {
     /**
      * Creates bitmap with barcode of specified format from input message.
      */
-    public Bitmap getBitmap(String toEncode, String format) throws WriterException {
+    public Bitmap getBitmap(String toEncode, String format, @DimenRes int sizeDp) throws WriterException {
         BarcodeFormat zxingFormat = null;
 
         switch (format) {
@@ -40,12 +44,14 @@ public class BarcodeEncoder {
                 break;
         }
 
+        // Remove barcode margin.
+        Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
+        hints.put(EncodeHintType.MARGIN, 0);
+
         Writer writer = new MultiFormatWriter();
 
-        DisplayMetrics metric = this.context.getResources().getDisplayMetrics();
-        float xdpi = metric.xdpi;
-
-        BitMatrix result = writer.encode(toEncode, zxingFormat, (int) (xdpi * 0.625), (int) (xdpi * 0.625));
+        int barcodeSizePx = context.getResources().getDimensionPixelSize(sizeDp);
+        BitMatrix result = writer.encode(toEncode, zxingFormat, barcodeSizePx, barcodeSizePx, hints);
 
         int width = result.getWidth();
         int height = result.getHeight();
