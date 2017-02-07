@@ -24,6 +24,7 @@ public class Pass {
     private Date expirationDate;
     private Date relevantDate;
 
+    private String logoText;
     private Barcode barcode;
     private Location[] locations;
     private BoardingPass boardingPass;
@@ -75,6 +76,8 @@ public class Pass {
     public Date getRelevantDate() {
         return relevantDate;
     }
+
+    public String getLogoText() { return logoText; }
 
     public Barcode getBarcode() {
         return barcode;
